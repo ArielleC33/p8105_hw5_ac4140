@@ -39,7 +39,7 @@ iris_with_missing = iris %>%
   mutate(Species = as.character(Species))
 ```
 
-
+##Problem 1
 ```{r}
 missing_values = function(x){
   if (is.numeric(x)) {
@@ -52,4 +52,48 @@ missing_values = function(x){
 ```{r}
 output = map(iris_with_missing, missing_values)
 ```
+
+Created a function that replaced the missing NAs that were numeric with the mean non-missing values. Also in that same function replaced the NAs in the character with virginica.
+
+##Problem 2
+```{r}
+df=
+  tibble(observations = list.files(path = "data/", pattern = "csv", all.files = TRUE, full.names= TRUE)) %>% 
+  mutate(df = map(observations, read_csv)) %>% 
+  unnest()
+```
+
+```{r}
+df1=
+df %>% 
+  janitor::clean_names() %>%
+  mutate(
+    observations= str_remove(observations, "data//"),
+    observations = str_remove(observations, ".csv")) 
+```
+
+
+```{r}
+df2 =
+  df1%>% 
+  mutate(observation = observations) %>% 
+  separate(observations, into= c("arm", "subjectID"), sep = "_") %>%
+  pivot_longer(
+     week_1:week_8,
+     names_prefix = "week_",
+     names_to = "weeks",
+     values_to = "value") 
+```
+
+
+```{r}
+df2 %>%  
+  group_by(subjectID, arm) %>% 
+  ggplot(aes(x= weeks, y= value, group= observation, color = arm)) + geom_line() +labs(
+    x = "Weeks",
+    y = "Values",
+    title= "Observations over 8 Week Period")
+```
+
+The experimental observations have an overall higher values than those in the controls.The experimentals increase over the eight week period, whereas the controls seem to slightly decreased over the same 8 week period. 
 
